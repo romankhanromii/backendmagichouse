@@ -107,6 +107,8 @@
 // });
 const express = require('express');
 const passport = require('passport');
+const cors = require('cors'); // Import the cors middleware
+
 const authroutes = require('./routes/authroutes'); // Update the path as needed
 const app = express();
 
@@ -115,6 +117,15 @@ app.use(express.json());
 // Initialize Passport
 require('./config/passport');
 
+// Use the cors middleware to allow requests from any origin
+const corsOptions = {
+  origin: "*",
+  "Access-Control-Allow-Origin": "*",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 // Define routes
 app.get('/', (req, res) => {
   res.send('Welcome to the authentication API!');

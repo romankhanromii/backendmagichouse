@@ -8,18 +8,18 @@ module.exports = {
   signup: async (req, res) => {
     try {
       const { username, email, password } = req.body;
-      
+
       // Check if the user already exists
       const [existingUser] = await promisePool.query('SELECT * FROM users WHERE email = ?', [email]);
       if (existingUser.length > 0) {
         return res.status(409).json({ message: 'User already exists' });
       }
-      
+
 
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
       // Insert the user into the database
-      await  promisePool.query('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, hashedPassword]);
+      await promisePool.query('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, hashedPassword]);
       return res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
       console.error('Error in /signup:', error);
@@ -29,25 +29,35 @@ module.exports = {
 
   login: async (req, res) => {
     try {
-      const { email, password } = req.body;
-      console.log('Received request with email:', email,password);
+      const { emailOrUsername, password } = req.body; // Use a single field for email or username
+      
+  
+      // Check if the user exists based on email or username
+      const [user] = await promisePool.query('SELECT * FROM users WHERE email = ? OR username = ?', [emailOrUsername, emailOrUsername]);
+  
+    
+  
       // Check if the user exists
-      const [user] = await  promisePool.query('SELECT * FROM users WHERE email = ?', [email]);
-      console.log('User retrieved from the database:', user);
-      if (user.length === 0) {
+      if (!user.length) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
-
+  
       // Compare the provided password with the hashed password in the database
       const match = await bcrypt.compare(password, user[0].password);
-      console.log('Password comparison result:', match);
+  
     
-
-
-
+  
       if (!match) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
+  
+      // At this point, the login was successful
+      // You can generate and return a JWT token or perform further actions
+      // For example:
+      // const token = generateAuthToken(user[0].id);
+      // return res.status(200).json({ token });
+    
+  
   
 
 
